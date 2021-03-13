@@ -8,13 +8,17 @@ export function sortStrings(arr, param = 'asc') {
   const sortingArr = [...arr];
 
   sortingArr.sort((a, b) => {
-    if ((a !== b) && (a.toLowerCase() === b.toLowerCase())) {
-      if (param === 'asc') {
-        return -1;
-      }
-      return 1;
-    }
-    return a.toLowerCase().localeCompare(b.toLowerCase());
+    const caseFirst = param === 'asc' ? 'upper' : 'lower';
+
+    return a
+      .localeCompare(
+        b,
+        'ru',
+        {
+          sensitivity: 'case',
+          caseFirst: caseFirst
+        }
+      );
   });
 
   if (param === 'desc') {
