@@ -22,30 +22,3 @@ export function sortStrings(arr, param = 'asc') {
   }
   return sortingArr;
 }
-
-// const data = [
-//   'Соска (пустышка) NUK 10729357',
-//   'ТВ тюнер D-COLOR  DC1301HD',
-//   'Детский велосипед Lexus Trike Racer Trike',
-//   'Соска (пустышка) Philips SCF182/12',
-//   'Powerbank аккумулятор Hiper SP20000'
-// ];
-
-// const expectedAsc = [
-//   'Детский велосипед Lexus Trike Racer Trike',
-//   'Соска (пустышка) NUK 10729357',
-//   'Соска (пустышка) Philips SCF182/12',
-//   'ТВ тюнер D-COLOR  DC1301HD',
-//   'Powerbank аккумулятор Hiper SP20000'
-// ];
-
-// const expectedDesc = [
-//   'Powerbank аккумулятор Hiper SP20000',
-//   'ТВ тюнер D-COLOR  DC1301HD',
-//   'Соска (пустышка) Philips SCF182/12',
-//   'Соска (пустышка) NUK 10729357',
-//   'Детский велосипед Lexus Trike Racer Trike'
-// ];
-
-// console.log('asc', sortStrings(data));
-// console.log('desc', sortStrings(data, 'desc'));
