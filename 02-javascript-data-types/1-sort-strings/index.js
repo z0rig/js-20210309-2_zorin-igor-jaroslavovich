@@ -5,24 +5,23 @@
  * @returns {string[]}
  */
 export function sortStrings(arr, param = 'asc') {
+  const LOCALE = 'ru';
+  const COLLATOR_OPTIONS = {
+    caseFirst: 'upper',
+    sensitivity: 'case',
+  };
+
   const sortingArr = [...arr];
 
-  sortingArr.sort((a, b) => {
-    const caseFirst = param === 'asc' ? 'upper' : 'lower';
+  sortingArr.sort(
+    (a, b) => {
+      if (param === 'desc') {
+        [a, b] = [b, a];
+      }
 
-    return a
-      .localeCompare(
-        b,
-        'ru',
-        {
-          sensitivity: 'case',
-          caseFirst: caseFirst
-        }
-      );
-  });
+      return new Intl.Collator(LOCALE, COLLATOR_OPTIONS).compare(a, b);
+    }
+  );
 
-  if (param === 'desc') {
-    return sortingArr.reverse();
-  }
   return sortingArr;
 }
