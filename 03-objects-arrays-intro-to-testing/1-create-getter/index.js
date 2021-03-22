@@ -6,9 +6,9 @@
 const PATH_SEPARATOR = '.';
 
 export function createGetter(path) {
-  return (obj) => {
-    const pathParts = path.split(PATH_SEPARATOR);
+  const pathParts = path.split(PATH_SEPARATOR);
 
+  return (obj) => {
     return pathParts
       .reduce(
         (
