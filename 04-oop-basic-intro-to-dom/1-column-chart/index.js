@@ -5,26 +5,27 @@ export default class ColumnChart {
     value = '',
     link = ''
   } = {}) {
-    this.data = data;
-    this.label = label;
-    this.value = value;
-    this.link = link;
-    this.chartHeight = 50;
+    this._data = data;
+    this._label = label;
+    this._value = value;
+    this._link = link;
 
-    this.render();
+    this._render();
   }
 
-  render() {
-    const { label, value } = this;
+  chartHeight = 50;
+
+  _render() {
+    const { _label: label, _value: value } = this;
 
     const link =
-      this.link ?
-        `<a href="${this.link}" class="column-chart__link">View all</a>` :
+      this._link ?
+        `<a href="${this._link}" class="column-chart__link">View all</a>` :
         '';
 
-    const chart = this.renderChart();
+    const chart = this._renderChart();
 
-    const haveData = Boolean(this.data.length);
+    const haveData = Boolean(this._data.length);
     const columnChartClassNames = `column-chart ${haveData || 'column-chart_loading'}`;
 
     const element = document.createElement('div');
@@ -44,8 +45,8 @@ export default class ColumnChart {
     this.element = element.firstElementChild;
   }
 
-  renderChart() {
-    const columnProps = this.getColumnProps();
+  _renderChart() {
+    const columnProps = this._getColumnProps();
     const columns = columnProps.reduce((acc, item) => {
       const { percent, value } = item;
 
@@ -61,11 +62,11 @@ export default class ColumnChart {
     return chart;
   }
 
-  getColumnProps() {
-    const maxValue = Math.max(...this.data);
+  _getColumnProps() {
+    const maxValue = Math.max(...this._data);
     const scale = this.chartHeight / maxValue;
 
-    return this.data.map(item => {
+    return this._data.map(item => {
       return {
         percent: (item / maxValue * 100).toFixed(0) + '%',
         value: String(Math.floor(item * scale))
@@ -74,8 +75,8 @@ export default class ColumnChart {
   }
 
   update(data) {
-    this.data = data;
-    this.render();
+    this._data = data;
+    this._render();
   }
 
   remove() {
