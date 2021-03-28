@@ -1,35 +1,35 @@
 export default class ColumnChart {
+  chartHeight = 50;
+  subElements = {};
+
   constructor({
     data = [],
     label = '',
     value = '',
     link = ''
   } = {}) {
-    this._data = data;
-    this._label = label;
-    this._value = value;
-    this._link = link;
+    this.data = data;
+    this.label = label;
+    this.value = value;
+    this.link = link;
 
-    this._render();
+    this.render();
   }
 
-  chartHeight = 50;
-
-  _render() {
-    const { _label: label, _value: value } = this;
+  get template() {
+    const { label, value } = this;
 
     const link =
-      this._link ?
-        `<a href="${this._link}" class="column-chart__link">View all</a>` :
+      this.link ?
+        `<a href="${this.link}" class="column-chart__link">View all</a>` :
         '';
 
-    const chart = this._renderChart();
+    const chartColumns = this.renderChartColumns();
 
-    const haveData = Boolean(this._data.length);
+    const haveData = Boolean(this.data.length);
     const columnChartClassNames = `column-chart ${haveData || 'column-chart_loading'}`;
 
-    const element = document.createElement('div');
-    element.innerHTML = `
+    return `
       <div class="${columnChartClassNames}" style="--chart-height: 50">
         <div class="column-chart__title">
           ${label}
@@ -37,36 +37,40 @@ export default class ColumnChart {
         </div>
         <div class="column-chart__container">
           <div data-element="header" class="column-chart__header">${value}</div>
-          ${chart}
+            <div data-element="body" class="column-chart__chart">
+              ${chartColumns}
+            </div>
+          </div>
         </div>
       </div>
     `;
+  }
+
+  render() {
+    const element = document.createElement('div');
+    element.innerHTML = this.template;
 
     this.element = element.firstElementChild;
+
+    this.subElements = this.getSubElements(this.element);
   }
 
-  _renderChart() {
-    const columnProps = this._getColumnProps();
-    const columns = columnProps.reduce((acc, item) => {
-      const { percent, value } = item;
+  renderChartColumns() {
+    const columnProps = this.getColumnProps();
+    return columnProps
+      .map((item) => {
+        const { percent, value } = item;
 
-      return acc + `<div style="--value: ${value}" data-tooltip="${percent}"></div>`;
-    }, '');
-
-    const chart = `
-      <div data-element="body" class="column-chart__chart">
-        ${columns}
-      </div>
-    `;
-
-    return chart;
+        return `<div style="--value: ${value}" data-tooltip="${percent}"></div>`;
+      })
+      .join('');
   }
 
-  _getColumnProps() {
-    const maxValue = Math.max(...this._data);
+  getColumnProps() {
+    const maxValue = Math.max(...this.data);
     const scale = this.chartHeight / maxValue;
 
-    return this._data.map(item => {
+    return this.data.map(item => {
       return {
         percent: (item / maxValue * 100).toFixed(0) + '%',
         value: String(Math.floor(item * scale))
@@ -74,9 +78,19 @@ export default class ColumnChart {
     });
   }
 
+  getSubElements(element) {
+    const elements = element.querySelectorAll('[data-element]');
+
+    return [...elements].reduce((acc, subElement) => {
+      acc[subElement.dataset.element] = subElement;
+
+      return acc;
+    }, {});
+  }
+
   update(data) {
-    this._data = data;
-    this._render();
+    this.data = data;
+    this.subElements.body.innerHTML = this.renderChartColumns();
   }
 
   remove() {
@@ -85,5 +99,7 @@ export default class ColumnChart {
 
   destroy() {
     this.remove();
+    this.element = null;
+    this.subElements = null;
   }
 }
