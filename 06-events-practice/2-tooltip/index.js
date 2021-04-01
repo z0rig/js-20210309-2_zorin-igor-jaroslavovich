@@ -8,7 +8,7 @@ class Tooltip {
       return;
     }
 
-    this.render();
+    this.render(tooltip);
 
     this.element.textContent = tooltip;
 
@@ -54,17 +54,15 @@ class Tooltip {
     document.addEventListener('pointerover', this.pointeroverHandler);
   }
 
-  render() {
-    if (this.element) {
-      document.body.append(this.element);
-      return;
+  render(htmlString) {
+    if (!this.element) {
+      const element = document.createElement('div');
+      element.innerHTML = this.template;
+
+      this.element = element.firstElementChild;
     }
 
-    const element = document.createElement('div');
-    element.innerHTML = this.template;
-
-    this.element = element.firstElementChild;
-
+    this.element.innerHTML = htmlString;
     document.body.append(this.element);
   }
 
