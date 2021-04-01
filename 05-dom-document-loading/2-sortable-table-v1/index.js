@@ -8,46 +8,34 @@ export default class SortableTable {
   }
 
   sort(fieldId, orderValue) {
-    const sortedData = [...this.data];
-
-    const sortType = this.header.find((item) => item.id === fieldId).sortType;
-
-    switch (sortType) {
-    case 'string':
-      sortedData.sort((a, b) => this.stringSorting(a[fieldId], b[fieldId], orderValue));
-      break;
-
-    case 'number':
-      sortedData.sort((a, b) => this.numberSorting(a[fieldId], b[fieldId], orderValue));
-      break;
-
-    default:
-      break;
-    }
-
-    this.subElements.body.innerHTML = this.createTableRows(sortedData);
-  }
-
-  stringSorting(a, b, orderValue) {
     const LOCALE = 'ru';
     const COLLATOR_OPTIONS = {
       caseFirst: 'upper',
       sensitivity: 'case',
     };
 
-    if (orderValue === 'desc') {
-      [a, b] = [b, a];
-    }
+    const sortedData = [...this.data];
 
-    return new Intl.Collator(LOCALE, COLLATOR_OPTIONS).compare(a, b);
-  }
+    const sortType = this.header.find((item) => item.id === fieldId).sortType;
 
-  numberSorting(a, b, orderValue) {
-    if (orderValue === 'desc') {
-      [a, b] = [b, a];
-    }
+    const directions = {
+      asc: 1,
+      desc: -1
+    };
+    const direction = directions[orderValue];
 
-    return a - b;
+    sortedData.sort((a, b) => {
+      switch (sortType) {
+      case 'number':
+        return direction * (a[fieldId] - b[fieldId]);
+      case 'string':
+        return direction * new Intl.Collator(LOCALE, COLLATOR_OPTIONS).compare(a[fieldId], b[fieldId]);
+      default:
+        return direction * (a[fieldId] - b[fieldId]);
+      }
+    });
+
+    this.subElements.body.innerHTML = this.createTableRows(sortedData);
   }
 
   get template() {

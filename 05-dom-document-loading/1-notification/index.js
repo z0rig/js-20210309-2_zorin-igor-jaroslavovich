@@ -1,4 +1,6 @@
 export default class NotificationMessage {
+  static currentNotification = null;
+
   constructor(
     notificationText = '',
     {
@@ -12,8 +14,6 @@ export default class NotificationMessage {
     this.type = type;
     this.element = this.createNotificationElement();
   }
-
-  static currentNotification = null;
 
   get template() {
     return `
@@ -36,7 +36,7 @@ export default class NotificationMessage {
     return element.firstElementChild;
   }
 
-  show(parent) {
+  show(parent = document.body) {
     if (NotificationMessage.currentNotification) {
       clearTimeout(NotificationMessage.currentNotification.timeoutId);
       NotificationMessage.currentNotification.remove();
@@ -44,11 +44,7 @@ export default class NotificationMessage {
 
     NotificationMessage.currentNotification = this;
 
-    if (parent) {
-      parent.append(this.element);
-    } else {
-      document.body.append(this.element);
-    }
+    parent.append(this.element);
 
     this.timeoutId = setTimeout(() => {
       this.remove();
