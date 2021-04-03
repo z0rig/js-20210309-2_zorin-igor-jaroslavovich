@@ -30,7 +30,7 @@ export default class SortableTable {
     header = [],
     {
       data = [],
-      sortFieldId = 'title',
+      sortFieldId = header.find(item => item.sortable).id,
       defaultOrder = 'asc'
     }) {
     this.header = header;
@@ -172,12 +172,14 @@ export default class SortableTable {
   }
 
   remove() {
-    this.element.remove();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 
   destroy() {
     this.remove();
-    // this.element = null;
+    this.element = null;
     this.subElements.header
       .removeEventListener('click', this.headerCellHandler);
   }
