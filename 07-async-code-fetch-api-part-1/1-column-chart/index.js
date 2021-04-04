@@ -29,7 +29,7 @@ export default class ColumnChart {
     this.update(from, to);
   }
 
-  async fetchData(params) {
+  fetchData(params) {
     const BASE_URL = 'https://course-js.javascript.ru';
 
     const requestURL = new URL(this.url, BASE_URL);
@@ -123,14 +123,12 @@ export default class ColumnChart {
   }
 
   async update(from, to) {
+    this.element.classList.add('column-chart_loading');
+
     const fetchedData = await this.fetchData({ from: from, to: to });
     const data = Object.values(fetchedData);
 
-    if (!data.length) {
-      this.element.classList.add('column-chart_loading');
-    } else {
-      this.element.classList.remove('column-chart_loading');
-    }
+    this.element.classList.remove('column-chart_loading');
 
     this.subElements.body.innerHTML = this.renderChartColumns(data);
     this.renderHeading(data);
