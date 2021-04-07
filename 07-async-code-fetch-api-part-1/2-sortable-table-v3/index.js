@@ -1,5 +1,7 @@
 import fetchJson from './utils/fetch-json.js';
 
+const BASE_URL = 'https://course-js.javascript.ru';
+
 export default class SortableTable {
   subElements = {}
 
@@ -22,19 +24,20 @@ export default class SortableTable {
       this.subElements.activeHeaderCell.dataset.order = 'desc';
     }
 
-    this.sortingOrder = cellEl.dataset.order;
-    this.sortFieldId = cellEl.dataset.id;
+    const { id, order } = cellEl.dataset;
+    this.sortFieldId = id;
+    this.sortingOrder = order;
 
     if (this.isSortOnClient) {
-      this.sort(id, orderValue);
+      this.sortOnClient(id, order);
 
       return;
     }
 
-    this.sortOnServer();
+    this.sortOnServer(id, order);
   }
 
-  documentScrollHandler = () => {
+  documentScrollHandler = async () => {
     const { body } = this.subElements;
 
     const isTableBottomInViewport =
@@ -42,12 +45,15 @@ export default class SortableTable {
         .bottom - window.innerHeight - 100 < 0;
 
     if (isTableBottomInViewport && !this.isLoading) {
-      const end = this.start + this.rowPerScreen * ++this.currentScreen;
+      this.start = this.end;
+      this.end += this.step;
 
-      this.fetchData(end).then((data) => {
-        this.subElements.body.innerHTML = this.createTableRows(data);
-        this.isLoading = false;
-      });
+      const fetchedData = await this.fetchData(this.sortFieldId, this.sortingOrder);
+
+      this.data = [...this.data, ...fetchedData];
+
+      this.createTableRows(this.data);
+
     }
   }
 
@@ -61,7 +67,7 @@ export default class SortableTable {
         id: header.find(item => item.sortable).id,
         order: 'asc'
       },
-      rowPerScreen = 30,
+      step = 30,
     } = {}) {
     this.header = header;
     this.data = data;
@@ -69,49 +75,47 @@ export default class SortableTable {
     this.url = url;
     this.sortFieldId = sorted.id;
     this.sortingOrder = sorted.order;
-    this.rowPerScreen = rowPerScreen;
 
+    this.step = step;
     this.start = 0;
-    this.currentScreen = 1;
+    this.end = this.start + this.step;
+
     this.isLoading = false;
 
     this.render();
-    this.initEventListeners();
   }
 
-  fetchData(end = this.start + this.rowPerScreen) {
-    const BASE_URL = 'https://course-js.javascript.ru';
-
+  async fetchData(sortFieldId, sortingOrder, start = this.start, end = this.end) {
     const requestURL = new URL(this.url, BASE_URL);
 
-    requestURL.searchParams.set('_sort', this.sortFieldId);
-    requestURL.searchParams.set('_order', this.sortingOrder);
-    requestURL.searchParams.set('_start', this.start);
+    requestURL.searchParams.set('_sort', sortFieldId);
+    requestURL.searchParams.set('_order', sortingOrder);
+    requestURL.searchParams.set('_start', start);
     requestURL.searchParams.set('_end', end);
 
-    this.isLoading = true;
-    return fetchJson(requestURL);
-  }
-
-  async sortOnServer() {
-    this.currentScreen = 1;
-    this.subElements.body.innerHTML = '';
     this.subElements.loading.style.display = 'block';
+    this.isLoading = true;
 
-    const fetchedData = await this.fetchData();
-    this.isLoading = false;
+    const newData = await fetchJson(requestURL);
 
     this.subElements.loading.style.display = 'none';
+    this.isLoading = false;
 
-    if (!fetchedData.length) {
+    if (!newData.length) {
       this.subElements.emptyPlaceholder.style.display = 'block';
 
-      return;
+      return [];
     }
 
     this.subElements.emptyPlaceholder.style.display = 'none';
 
-    this.subElements.body.innerHTML = this.createTableRows(fetchedData);
+    return newData;
+  }
+
+  async sortOnServer(id, order) {
+    const fetchedData = await this.fetchData(id, order);
+
+    this.createTableRows(fetchedData);
   }
 
   async render() {
@@ -125,9 +129,11 @@ export default class SortableTable {
     this.subElements.activeHeaderCell =
       this.element.querySelector(`[data-order="${this.sortingOrder}"]`);
 
-    const fetchedData = await this.fetchData();
-    this.isLoading = false;
-    this.subElements.body.innerHTML = this.createTableRows(fetchedData);
+    this.data = await this.fetchData(this.sortFieldId, this.sortingOrder);
+
+    this.createTableRows(this.data);
+
+    this.initEventListeners();
   }
 
   get template() {
@@ -182,7 +188,7 @@ export default class SortableTable {
   }
 
   createTableRows(data) {
-    return data.map((rowData) => {
+    this.subElements.body.innerHTML = data.map((rowData) => {
       const { id } = rowData;
       return `
         <a href="/products/${id}" class="sortable-table__row">
@@ -204,30 +210,21 @@ export default class SortableTable {
     }).join('');
   }
 
-  sort(fieldId, orderValue) {
-    const sortedData = this.sortData(fieldId, orderValue);
-
-    this.subElements.body.innerHTML = this.createTableRows(sortedData);
-  }
-
-  sortData(fieldId, orderValue = 'asc') {
+  sortOnClient(fieldId, orderValue) {
     const LOCALE = 'ru';
     const COLLATOR_OPTIONS = {
       caseFirst: 'upper',
       sensitivity: 'case',
     };
 
-    const sortedData = [...this.data];
-
     const sortType = this.header.find((item) => item.id === fieldId).sortType;
-
     const directions = {
       asc: 1,
       desc: -1
     };
     const direction = directions[orderValue];
 
-    return sortedData.sort((a, b) => {
+    const sortedData = [...this.data].sort((a, b) => {
       switch (sortType) {
       case 'number':
         return direction * (a[fieldId] - b[fieldId]);
@@ -237,6 +234,8 @@ export default class SortableTable {
         return direction * (a[fieldId] - b[fieldId]);
       }
     });
+
+    this.createTableRows(sortedData);
   }
 
   initEventListeners() {
