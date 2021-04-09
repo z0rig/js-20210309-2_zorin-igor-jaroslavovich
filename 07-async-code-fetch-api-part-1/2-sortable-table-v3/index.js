@@ -266,9 +266,6 @@ export default class SortableTable {
     this.remove();
     this.element = null;
 
-    this.subElements.header
-      .removeEventListener('pointerdown', this.headerCellHandler);
-
     document.removeEventListener('scroll', this.documentScrollHandler);
   }
 }
