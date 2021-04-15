@@ -61,7 +61,7 @@
 
   async function initialize () {
     const page = new Page();
-    const element = await page.render();
+    const element = page.render();
 
     contentNode.innerHTML = '';
     contentNode.append(element);
