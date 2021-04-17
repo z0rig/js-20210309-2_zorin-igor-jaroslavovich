@@ -86,7 +86,6 @@ export default class SortableTable {
   }
 
   async fetchData(sortFieldId, sortingOrder, start = this.start, end = this.end) {
-    console.log(sortFieldId, sortingOrder);
     const requestURL = new URL(this.url, BASE_URL);
 
     requestURL.searchParams.set('_sort', sortFieldId);

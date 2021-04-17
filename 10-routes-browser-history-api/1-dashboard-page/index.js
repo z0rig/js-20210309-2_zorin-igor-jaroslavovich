@@ -133,7 +133,9 @@ export default class Page {
   }
 
   remove() {
-    this.element.remome();
+    if (this.element) {
+      this.element.remove();
+    }
   }
 
   destroy() {
