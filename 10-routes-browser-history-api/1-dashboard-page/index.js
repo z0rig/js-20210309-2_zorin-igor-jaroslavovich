@@ -46,7 +46,7 @@ export default class Page {
     const rangePicker = new RangePicker({ from, to });
 
     const sortableTable = new SortableTable(header, {
-      isSortLocally: true,
+      isSortOnClient: true,
       url: `api/dashboard/bestsellers?_start=1&_end=20&from=${from.toISOString()}&to=${to.toISOString()}`
     });
 
