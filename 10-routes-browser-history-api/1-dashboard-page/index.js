@@ -17,7 +17,7 @@ export default class Page {
       `${BACKEND_URL}api/dashboard/bestsellers?_start=1&_end=20&from=${from.toISOString()}&to=${to.toISOString()}`
     );
 
-    this.components.sortableTable.addRows(newData);
+    this.components.sortableTable.createTableRows(newData);
     this.components.ordersChart.update(from, to);
     this.components.salesChart.update(from, to);
     this.components.customersChart.update(from, to);
